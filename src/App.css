@@ -1,11 +1,4 @@
-.App {
-  text-align: center;
-}
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -13,19 +6,15 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.main-header {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
+  font-size: calc(14px + 3vmin);
+  color: var(--primary);
+  padding-top: calc(30px + 5vmin);
+  padding-bottom: 5%;
 }
 
 @keyframes App-logo-spin {
@@ -34,5 +23,224 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+
+.JetBrainsMono-Regular {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+html * {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--default-text);
+}
+
+.trifold-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  width: 70vw;
+  align-self: center;
+}
+
+.trifold-section {
+  max-width: 90vw;
+  min-width: 400px;
+}
+
+.basil-img {
+  display: flex;
+  align-self: center;
+  justify-self: center;
+  width: 65%;
+  height: 65%;
+}
+
+.user-console {
+  width: 40rem;
+  height: 35rem;
+}
+
+
+:root {
+  --default-text: #ffffff;
+  --primary: #8744df;
+  --secondary: #b4b4b4;
+
+  --close-button: #ff9b9b;
+  --minimize-button: #fcff4e;
+}
+
+.secondary-color {
+  color: var(--secondary);
+}
+
+
+.primary-color {
+  color: var(--primary);
+}
+
+span.shaking {
+  animation-name: Shaking-text;
+  animation-duration: 1s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  transform-origin:center center;
+  white-space:pre;
+  display:inline-block
+}
+@keyframes Shaking-text {
+  2%{
+    transform:translate(.5px,-1.5px) rotate(1.5deg)
+  }
+  4%{
+      transform:translate(1.5px,1.5px) rotate(-.5deg)
+  }
+  6%{
+      transform:translate(-1.5px,1.5px) rotate(.5deg)
+  }
+  8%{
+      transform:translate(.5px,2.5px) rotate(-.5deg)
+  }
+  10%{
+      transform:translate(.5px,2.5px) rotate(1.5deg)
+  }
+  12%{
+      transform:translate(.5px,2.5px) rotate(-.5deg)
+  }
+  14%{
+      transform:translate(-.5px,.5px) rotate(1.5deg)
+  }
+  16%{
+      transform:translate(-1.5px,2.5px) rotate(.5deg)
+  }
+  18%{
+      transform:translate(1.5px,-1.5px) rotate(1.5deg)
+  }
+  20%{
+      transform:translate(1.5px,.5px) rotate(1.5deg)
+  }
+  22%{
+      transform:translate(2.5px,-1.5px) rotate(1.5deg)
+  }
+  24%{
+      transform:translate(2.5px,2.5px) rotate(-.5deg)
+  }
+  26%{
+      transform:translate(.5px,-.5px) rotate(.5deg)
+  }
+  28%{
+      transform:translate(1.5px,.5px) rotate(.5deg)
+  }
+  30%{
+      transform:translate(1.5px,1.5px) rotate(-.5deg)
+  }
+  32%{
+      transform:translate(1.5px,-1.5px) rotate(.5deg)
+  }
+  34%{
+      transform:translate(2.5px,-1.5px) rotate(.5deg)
+  }
+  36%{
+      transform:translate(1.5px,.5px) rotate(.5deg)
+  }
+  38%{
+      transform:translate(-1.5px,2.5px) rotate(1.5deg)
+  }
+  40%{
+      transform:translate(-1.5px,-1.5px) rotate(.5deg)
+  }
+  42%{
+      transform:translate(2.5px,-1.5px) rotate(.5deg)
+  }
+  44%{
+      transform:translate(.5px,-.5px) rotate(1.5deg)
+  }
+  46%{
+      transform:translate(-.5px,-.5px) rotate(.5deg)
+  }
+  48%{
+      transform:translate(-1.5px,-1.5px) rotate(1.5deg)
+  }
+  50%{
+      transform:translate(.5px,-1.5px) rotate(-.5deg)
+  }
+  52%{
+      transform:translate(-1.5px,-.5px) rotate(-.5deg)
+  }
+  54%{
+      transform:translate(-.5px,2.5px) rotate(1.5deg)
+  }
+  56%{
+      transform:translate(.5px,-1.5px) rotate(.5deg)
+  }
+  58%{
+      transform:translate(.5px,.5px) rotate(-.5deg)
+  }
+  60%{
+      transform:translate(1.5px,-.5px) rotate(-.5deg)
+  }
+  62%{
+      transform:translate(2.5px,.5px) rotate(-.5deg)
+  }
+  64%{
+      transform:translate(.5px,.5px) rotate(1.5deg)
+  }
+  66%{
+      transform:translate(-.5px,2.5px) rotate(.5deg)
+  }
+  68%{
+      transform:translate(-1.5px,-1.5px) rotate(.5deg)
+  }
+  70%{
+      transform:translate(-1.5px,.5px) rotate(-.5deg)
+  }
+  72%{
+      transform:translate(.5px,1.5px) rotate(1.5deg)
+  }
+  74%{
+      transform:translate(.5px,-1.5px) rotate(1.5deg)
+  }
+  76%{
+      transform:translate(-1.5px,.5px) rotate(1.5deg)
+  }
+  78%{
+      transform:translate(.5px,-1.5px) rotate(.5deg)
+  }
+  80%{
+      transform:translate(-.5px,-1.5px) rotate(1.5deg)
+  }
+  82%{
+      transform:translate(-1.5px,1.5px) rotate(.5deg)
+  }
+  84%{
+      transform:translate(-1.5px,2.5px) rotate(1.5deg)
+  }
+  86%{
+      transform:translate(-1.5px,.5px) rotate(.5deg)
+  }
+  88%{
+      transform:translate(1.5px,1.5px) rotate(-.5deg)
+  }
+  90%{
+      transform:translate(.5px,-1.5px) rotate(-.5deg)
+  }
+  92%{
+      transform:translate(-.5px,-1.5px) rotate(.5deg)
+  }
+  94%{
+      transform:translate(-1.5px,1.5px) rotate(.5deg)
+  }
+  96%{
+      transform:translate(2.5px,-1.5px) rotate(1.5deg)
+  }
+  98%{
+      transform:translate(1.5px,-1.5px) rotate(-.5deg)
+  }
+  0%,to{
+      transform:translate(0) rotate(0)
   }
 }
