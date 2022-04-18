@@ -4,7 +4,7 @@ import { globalZIndex } from "../App"
 
 
 
-export interface UserApplicationState {
+export interface ApplicationState {
     width: number,
     height: number,
     pos: {
@@ -18,7 +18,7 @@ export interface UserApplicationState {
     titleBarPressed: boolean,
     zIndex: number
 }
-export abstract class UserApplication extends React.Component<any, UserApplicationState> {
+export abstract class Application extends React.Component<any, ApplicationState> {
     public abstract name : string 
     public abstract icon? : string
 
@@ -78,7 +78,7 @@ export abstract class UserApplication extends React.Component<any, UserApplicati
 
     abstract renderApplication() : JSX.Element
 
-    override render() : ReactElement<UserApplication> {
+    override render() : ReactElement<Application> {
         let style : CSSProperties = {
             height: this.initialHeight+"px",
             width: this.initialWidth+"px",
