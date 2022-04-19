@@ -64,7 +64,11 @@ export abstract class Application extends React.Component<any, ApplicationState>
             <div className="bg-gray-800 flex rounded-t-lg -translate-y-10 justify-between"
                 onMouseDown={(e) => this.onMouseDown(e.nativeEvent)}
                 onMouseUp={(e) => this.onMouseUp(e.nativeEvent)}
-                onMouseMove={(e) => this.handleMovement(e.nativeEvent)}>
+                onMouseMove={(e) => this.handleMovement(e.nativeEvent)}
+                onTouchStart={(e) => this.onMouseDown(e.nativeEvent)}
+                onTouchEnd={(e) => this.onMouseUp(e.nativeEvent)}
+                onTouchMove={(e) => this.handleMovement(e.nativeEvent)}
+                >
                 <div>
                     <p className="pl-4 pt-2 pb-2">Console</p>
                 </div>
@@ -105,51 +109,84 @@ export abstract class Application extends React.Component<any, ApplicationState>
 
     }
 
-    private onMouseDown(e: MouseEvent) {
-        if (e.button !== 0) return
+    private pageXY(e: MouseEvent | TouchEvent) : [number, number] {
+        
+        let pageX : number = 0
+        let pageY : number = 0
+        if (e instanceof MouseEvent) {
+            pageX = e.pageX
+            pageY = e.pageY
+        } else if (e instanceof TouchEvent) {
+            let touch = e.touches[0]
+            pageX = touch.pageX
+            pageY = touch.pageY
+        }
+        return [pageX, pageY]
+    }
+
+    private onMouseDown(e: MouseEvent | TouchEvent) {
+        if (e instanceof MouseEvent && e.button !== 0) return
+        
+        let [pageX, pageY] = this.pageXY(e)
+
         const ref : any = ReactDOM.findDOMNode(this);
         const body = document.body;
         const box = ref?.getBoundingClientRect();
         this.setState({
             posRelativeToCursor: {
-                x: e.pageX - (box.left + body.scrollLeft - body.clientLeft),
-                y: e.pageY - (box.top + body.scrollTop - body.clientTop)
+                x: pageX - (box.left + body.scrollLeft - body.clientLeft),
+                y: pageY - (box.top + body.scrollTop - body.clientTop)
             },
             titleBarPressed: true
         });
-        e.stopPropagation()
-        e.preventDefault()
+        try {
+            e.stopPropagation()
+            e.preventDefault()
+        } catch (ignored) {}
         
 
         document.addEventListener('mousemove', (ev) => {this.handleMovement(ev)});
         document.addEventListener('mouseup', (ev) => {this.onMouseUp(ev)});
+        
+        document.addEventListener('touchmove', (ev) => {this.handleMovement(ev)});
+        document.addEventListener('touchend', (ev) => {this.onMouseUp(ev)});
 
     }
 
-    private onMouseUp(e: MouseEvent) {
-        if (e.button !== 0) return
+    private onMouseUp(e: MouseEvent | TouchEvent) {
+        if (e instanceof MouseEvent && e.button !== 0) return
         this.setState({titleBarPressed: false})
-        e.stopPropagation()
-        e.preventDefault()
+        try {
+            e.stopPropagation()
+            e.preventDefault()
+        } catch (ignored) {}
 
         document.removeEventListener('mousemove', (ev) => {this.handleMovement(ev)});
         document.removeEventListener('mouseup', (ev) => {this.onMouseUp(ev)});
+
+        
+        document.removeEventListener('touchmove', (ev) => {this.handleMovement(ev)});
+        document.removeEventListener('touchend', (ev) => {this.onMouseUp(ev)});
     }
 
-    private handleMovement(e: MouseEvent) {
+    private handleMovement(e: MouseEvent | TouchEvent) {
 
         if (!this.state.titleBarPressed) return
+
+        let [pageX, pageY] = this.pageXY(e)
 
 
         this.setState((state) => ({
             pos: {
-                x: e.pageX - (state.posRelativeToCursor.x ?? 0),
-                y: e.pageY - (state.posRelativeToCursor.y ?? 0)
+                x: pageX - (state.posRelativeToCursor.x ?? 0),
+                y: pageY - (state.posRelativeToCursor.y ?? 0)
             }
-          }))
-          
-        e.stopPropagation()
-        e.preventDefault()
+        }))
+        
+        try {
+            e.stopPropagation()
+            e.preventDefault()
+        } catch (ignored) {}
     }
     
 }
