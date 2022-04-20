@@ -1,5 +1,4 @@
-import React, { CSSProperties, ReactElement, useRef } from "react"
-import ReactDOM, { findDOMNode } from "react-dom"
+import React, { CSSProperties, ReactElement, RefObject } from "react"
 import { globalZIndex } from "../App"
 
 
@@ -18,7 +17,8 @@ export interface ApplicationState {
     titleBarPressed: boolean,
     zIndex: number
 }
-export abstract class Application extends React.Component<any, ApplicationState> {
+type Nullable<T> = T | undefined | null
+export abstract class Application <Props> extends React.Component<Props, ApplicationState> {
     public abstract name : string 
     public abstract icon? : string
 
@@ -27,8 +27,13 @@ export abstract class Application extends React.Component<any, ApplicationState>
     public initialHeight : number = 300
     public initialWidth : number = 450
 
-    constructor() {
-        super({})
+    public readonly titleBarRef : RefObject<HTMLDivElement>
+    public readonly appWindowRef : RefObject<HTMLDivElement>
+
+    constructor(props: Props) {
+        super(props)
+        this.titleBarRef = React.createRef()
+        this.appWindowRef = React.createRef()
         this.state = {
             width: this.initialWidth,
             height: this.initialHeight,
@@ -43,13 +48,16 @@ export abstract class Application extends React.Component<any, ApplicationState>
             titleBarPressed: false,
             zIndex: 0
         }
-        this.onMouseDown.bind(this)
-        this.onMouseUp.bind(this)
-        this.handleMovement.bind(this)
+        this.onTitleBarPress.bind(this)
+        this.onTitleBarUnpress.bind(this)
+        this.onTitleBarMove.bind(this)
     }
 
     override componentDidMount() {
         console.log(`[APP] ${this.name} launched!`)
+        this.titleBarRef.current?.addEventListener('touchstart', (ev) => {this.onTitleBarPress(ev)}, {passive: false});
+        this.titleBarRef.current?.addEventListener('touchmove', (ev) => {this.onTitleBarMove(ev)}, {passive: false});
+        this.titleBarRef.current?.addEventListener('touchend', (ev) => {this.onTitleBarUnpress(ev)}, {passive: false});
     }
     override componentWillUnmount() {
         console.log(`[APP] ${this.name} closed!`)
@@ -62,12 +70,10 @@ export abstract class Application extends React.Component<any, ApplicationState>
     private renderTitleBar() : JSX.Element {
         return (
             <div className="bg-gray-800 flex rounded-t-lg -translate-y-10 justify-between"
-                onMouseDown={(e) => this.onMouseDown(e.nativeEvent)}
-                onMouseUp={(e) => this.onMouseUp(e.nativeEvent)}
-                onMouseMove={(e) => this.handleMovement(e.nativeEvent)}
-                onTouchStart={(e) => this.onMouseDown(e.nativeEvent)}
-                onTouchEnd={(e) => this.onMouseUp(e.nativeEvent)}
-                onTouchMove={(e) => this.handleMovement(e.nativeEvent)}
+                onMouseDown={(e) => this.onTitleBarPress(e.nativeEvent)}
+                onMouseUp={(e) => this.onTitleBarUnpress(e.nativeEvent)}
+                onMouseMove={(e) => this.onTitleBarMove(e.nativeEvent)}
+                ref={this.titleBarRef}
                 >
                 <div>
                     <p className="pl-4 pt-2 pb-2">Console</p>
@@ -82,7 +88,7 @@ export abstract class Application extends React.Component<any, ApplicationState>
 
     abstract renderApplication() : JSX.Element
 
-    override render() : ReactElement<Application> {
+    override render() : ReactElement<typeof this> {
         let style : CSSProperties = {
             height: this.initialHeight+"px",
             width: this.initialWidth+"px",
@@ -94,7 +100,8 @@ export abstract class Application extends React.Component<any, ApplicationState>
         
         return (
             <div className={this.className} style={style}
-                onMouseDown={(e) => this.increaseZIndex()}>
+                onMouseDown={(e) => this.increaseZIndex()}
+                ref={this.appWindowRef}>
                 {this.renderTitleBar()}
                 {this.renderApplication()}
             </div>
@@ -117,21 +124,22 @@ export abstract class Application extends React.Component<any, ApplicationState>
             pageX = e.pageX
             pageY = e.pageY
         } else if (e instanceof TouchEvent) {
-            let touch = e.touches[0]
+            const touch = e.touches[0]
             pageX = touch.pageX
             pageY = touch.pageY
         }
         return [pageX, pageY]
     }
 
-    private onMouseDown(e: MouseEvent | TouchEvent) {
+    private onTitleBarPress(e: MouseEvent | TouchEvent) {
         if (e instanceof MouseEvent && e.button !== 0) return
         
         let [pageX, pageY] = this.pageXY(e)
 
-        const ref : any = ReactDOM.findDOMNode(this);
+        const ref : Nullable<HTMLDivElement> = this.appWindowRef.current
         const body = document.body;
         const box = ref?.getBoundingClientRect();
+        if (box == null) throw new Error("No ref found for app window "+this.name)
         this.setState({
             posRelativeToCursor: {
                 x: pageX - (box.left + body.scrollLeft - body.clientLeft),
@@ -139,41 +147,46 @@ export abstract class Application extends React.Component<any, ApplicationState>
             },
             titleBarPressed: true
         });
-        try {
+        if (e instanceof MouseEvent) {
             e.stopPropagation()
             e.preventDefault()
-        } catch (ignored) {}
+        }
         
 
-        document.addEventListener('mousemove', (ev) => {this.handleMovement(ev)});
-        document.addEventListener('mouseup', (ev) => {this.onMouseUp(ev)});
+        document.addEventListener('mousemove', (ev) => {this.onTitleBarMove(ev)});
+        document.addEventListener('mouseup', (ev) => {this.onTitleBarUnpress(ev)});
         
-        document.addEventListener('touchmove', (ev) => {this.handleMovement(ev)});
-        document.addEventListener('touchend', (ev) => {this.onMouseUp(ev)});
+        document.addEventListener('touchmove', (ev) => {this.onTitleBarMove(ev)}, {passive: false});
+        document.addEventListener('touchend', (ev) => {this.onTitleBarUnpress(ev)}, {passive: false});
 
     }
 
-    private onMouseUp(e: MouseEvent | TouchEvent) {
+    private onTitleBarUnpress(e: MouseEvent | TouchEvent) {
         if (e instanceof MouseEvent && e.button !== 0) return
         this.setState({titleBarPressed: false})
-        try {
+
+        if (e instanceof MouseEvent) {
             e.stopPropagation()
             e.preventDefault()
-        } catch (ignored) {}
+        }
 
-        document.removeEventListener('mousemove', (ev) => {this.handleMovement(ev)});
-        document.removeEventListener('mouseup', (ev) => {this.onMouseUp(ev)});
+        document.removeEventListener('mousemove', (ev) => {this.onTitleBarMove(ev)});
+        document.removeEventListener('mouseup', (ev) => {this.onTitleBarUnpress(ev)});
 
         
-        document.removeEventListener('touchmove', (ev) => {this.handleMovement(ev)});
-        document.removeEventListener('touchend', (ev) => {this.onMouseUp(ev)});
+        document.removeEventListener('touchmove', (ev) => {this.onTitleBarMove(ev)});
+        document.removeEventListener('touchend', (ev) => {this.onTitleBarUnpress(ev)});
     }
 
-    private handleMovement(e: MouseEvent | TouchEvent) {
+    private onTitleBarMove(e: MouseEvent | TouchEvent) {
 
         if (!this.state.titleBarPressed) return
 
         let [pageX, pageY] = this.pageXY(e)
+
+        if (this.state.zIndex <= globalZIndex.value) {
+            this.increaseZIndex()
+        }
 
 
         this.setState((state) => ({
@@ -183,10 +196,11 @@ export abstract class Application extends React.Component<any, ApplicationState>
             }
         }))
         
-        try {
+        if (e instanceof MouseEvent) {
             e.stopPropagation()
-            e.preventDefault()
-        } catch (ignored) {}
+        }
+        e.preventDefault()
+
     }
     
 }
