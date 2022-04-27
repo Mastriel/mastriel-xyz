@@ -7,7 +7,9 @@ import { TrifoldSection } from './components/TrifoldSection';
 import { SocialIcon } from './components/SocialIcon';
 import { ReactComponent as DiscordLogo } from './assets/Discord-Logo-White.svg';
 import { PageHeader } from './components/PageHeader';
-import { UserConsole } from './components/UserConsole';
+import { ConsoleApp } from './windows/apps/ConsoleApp';
+import { HelloApp } from './windows/apps/HelloApp';
+import { AppManagerComponent } from './windows/AppManager';
 
 
 export let globalZIndex = {
@@ -18,16 +20,9 @@ function App() {
   return (
     <div className="App">
       <PageHeader/>
-      <div id='application-layer'>
-        <UserConsole/>
-        <UserConsole/>
-        <UserConsole/>
-        <UserConsole/>
-        <UserConsole/>
-        <UserConsole/>
-        <UserConsole/>
-        <UserConsole/>
-      </div>
+      <AppManagerComponent>
+        <HelloApp/>
+      </AppManagerComponent>
       <h1 className="main-header antialiased">mastriel.xyz</h1>
 
       <TrifoldContainer>

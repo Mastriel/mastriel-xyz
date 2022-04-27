@@ -15,12 +15,13 @@ export interface ApplicationState {
         y?: number
     },
     titleBarPressed: boolean,
-    zIndex: number
+    zIndex: number,
+    pid: number
 }
 type Nullable<T> = T | undefined | null
-export abstract class Application <Props> extends React.Component<Props, ApplicationState> {
-    public abstract name : string 
-    public abstract icon? : string
+export abstract class Application <P={}, S extends ApplicationState=ApplicationState> extends React.Component<P, S> {
+    public abstract name : string  
+    public abstract icon? : string 
 
     public className? : string 
 
@@ -30,11 +31,19 @@ export abstract class Application <Props> extends React.Component<Props, Applica
     public readonly titleBarRef : RefObject<HTMLDivElement>
     public readonly appWindowRef : RefObject<HTMLDivElement>
 
-    constructor(props: Props) {
+    constructor(props: P) {
         super(props)
         this.titleBarRef = React.createRef()
         this.appWindowRef = React.createRef()
-        this.state = {
+        this.state = this.defaultApplicationState() as Readonly<S>
+        this.onTitleBarPress.bind(this)
+        this.onTitleBarUnpress.bind(this)
+        this.onTitleBarMove.bind(this)
+    }
+    
+
+    defaultApplicationState() : ApplicationState { 
+        return {
             width: this.initialWidth,
             height: this.initialHeight,
             pos: {
@@ -46,11 +55,9 @@ export abstract class Application <Props> extends React.Component<Props, Applica
                 y: undefined,
             },
             titleBarPressed: false,
-            zIndex: 0
+            zIndex: 0,
+            pid: 0
         }
-        this.onTitleBarPress.bind(this)
-        this.onTitleBarUnpress.bind(this)
-        this.onTitleBarMove.bind(this)
     }
 
     override componentDidMount() {
@@ -76,7 +83,7 @@ export abstract class Application <Props> extends React.Component<Props, Applica
                 ref={this.titleBarRef}
                 >
                 <div>
-                    <p className="pl-4 pt-2 pb-2">Console</p>
+                    <p className="pl-4 pt-2 pb-2">{this.name}</p>
                 </div>
                 <div className="flex justify-center items-center">
                     <WindowButton color="#fcff4e"/>
@@ -111,7 +118,7 @@ export abstract class Application <Props> extends React.Component<Props, Applica
     private increaseZIndex() {
         globalZIndex.value++
         this.setState({
-            zIndex: globalZIndex.value
+            zIndex: globalZIndex.value,
         })
 
     }

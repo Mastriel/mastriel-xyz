@@ -1,14 +1,14 @@
-import { Application } from "../windows/Application";
+import { Application } from "../Application";
 
 
 
 
-export class UserConsole extends Application<{}> {
+export class ConsoleApp extends Application<{}> {
     public override name: string = "Console"
     public override icon?: string
     public override className?: string = "bg-black"
 
-    override renderApplication() {
+    override renderApplication() : JSX.Element {
         return (
             <p>Test</p>
         )
