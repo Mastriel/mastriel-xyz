@@ -20,9 +20,7 @@ function App() {
   return (
     <div className="App">
       <PageHeader/>
-      <AppManagerComponent>
-        <HelloApp/>
-      </AppManagerComponent>
+      <AppManagerComponent/>
       <h1 className="main-header antialiased">mastriel.xyz</h1>
 
       <TrifoldContainer>
