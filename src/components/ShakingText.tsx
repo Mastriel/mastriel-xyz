@@ -3,7 +3,8 @@ import { PropsWithChildren, ReactNode } from "react";
 
 
 type ShakingTextProps = {
-  text: string
+  text: string,
+  className?: string
 }
 export function ShakingText(props: ShakingTextProps) : JSX.Element {
   let text = props.text
@@ -13,7 +14,7 @@ export function ShakingText(props: ShakingTextProps) : JSX.Element {
     let style = {
         animationDelay: `${-i*0.3}s`
     }
-    items.push(<span className="shaking" style={style} key={i}>{char}</span>)
+    items.push(<span className={`shaking ${props.className}`} style={style} key={i}>{char}</span>)
   }
   return (
     <span>

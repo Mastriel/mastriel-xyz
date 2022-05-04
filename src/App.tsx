@@ -31,7 +31,7 @@ function App() {
             </Centered>
             <div className="pb-14"/>
             <Centered>
-              <img src="/basil500.png" alt="basil from omori" className="basil-img"/>
+              <img src="./basil500.png" alt="basil from omori" className="basil-img"/>
             </Centered>
             <div className="pb-24"/>
             <SocialIcon src={DiscordLogo} text='Mastriel#0085'/>

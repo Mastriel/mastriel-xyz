@@ -26,9 +26,6 @@ export type AppProps = {
 type Nullable<T> = T | undefined | null
 export class Application extends React.Component<ApplicationProps, ApplicationState> {
 
-    public initialHeight : number = 300
-    public initialWidth : number = 450
-
     public readonly titleBarRef : RefObject<HTMLDivElement>
     public readonly appWindowRef : RefObject<HTMLDivElement>
 
@@ -88,8 +85,12 @@ export class Application extends React.Component<ApplicationProps, ApplicationSt
 
     override render() : ReactElement<typeof this> {
         let style : CSSProperties = {
-            height: this.initialHeight+"px",
-            width: this.initialWidth+"px",
+            maxHeight: (this.props.height ?? 300) + "px",
+            maxWidth: (this.props.width ?? 450) + "px",
+            minHeight: (this.props.height ?? 300) + "px",
+            minWidth: (this.props.width ?? 450) + "px",
+            height: (this.props.height ?? 300) + "px",
+            width: (this.props.width ?? 450) + "px",
             position: 'absolute',
             left: this.state.posX,
             top: this.state.posY,
