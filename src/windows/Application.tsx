@@ -1,29 +1,30 @@
-import React, { CSSProperties, ReactElement, RefObject } from "react"
+import React, { CSSProperties, PropsWithChildren, ReactElement, RefObject, useEffect, useState } from "react"
 import { globalZIndex } from "../App"
+import AppManager from "./AppManager"
 
 
 
-export interface ApplicationState {
-    width: number,
-    height: number,
-    pos: {
-        x: number,
-        y: number
-    }
-    posRelativeToCursor: {
-        x?: number,
-        y?: number
-    },
+interface ApplicationState {
+    posX: number,
+    posY: number,
+    posRelativeToCursorX?: number,
+    posRelativeToCursorY?: number
     titleBarPressed: boolean,
-    zIndex: number,
+    zIndex: number
+}
+type ApplicationProps = PropsWithChildren<any> & {
+    name: string,
+    width?: number,
+    height?: number,
+    className: string,
+    icon?: string,
+    pid?: number
+}
+export type AppProps = {
     pid: number
 }
 type Nullable<T> = T | undefined | null
-export abstract class Application <P={}, S extends ApplicationState=ApplicationState> extends React.Component<P, S> {
-    public abstract name : string  
-    public abstract icon? : string 
-
-    public className? : string 
+export class Application extends React.Component<ApplicationProps, ApplicationState> {
 
     public initialHeight : number = 300
     public initialWidth : number = 450
@@ -31,11 +32,11 @@ export abstract class Application <P={}, S extends ApplicationState=ApplicationS
     public readonly titleBarRef : RefObject<HTMLDivElement>
     public readonly appWindowRef : RefObject<HTMLDivElement>
 
-    constructor(props: P) {
+    constructor(props: ApplicationProps) {
         super(props)
         this.titleBarRef = React.createRef()
         this.appWindowRef = React.createRef()
-        this.state = this.defaultApplicationState() as Readonly<S>
+        this.state = this.defaultApplicationState()
         this.onTitleBarPress.bind(this)
         this.onTitleBarUnpress.bind(this)
         this.onTitleBarMove.bind(this)
@@ -44,34 +45,23 @@ export abstract class Application <P={}, S extends ApplicationState=ApplicationS
 
     defaultApplicationState() : ApplicationState { 
         return {
-            width: this.initialWidth,
-            height: this.initialHeight,
-            pos: {
-                x: 80,
-                y: 120
-            },
-            posRelativeToCursor: {
-                x: undefined,
-                y: undefined,
-            },
+            posX: 80,
+            posY: 120,
+            posRelativeToCursorX: undefined,
+            posRelativeToCursorY: undefined,
             titleBarPressed: false,
             zIndex: 0,
-            pid: 0
         }
     }
 
     override componentDidMount() {
-        console.log(`[APP] ${this.name} launched!`)
+        console.log(`[APP] ${this.props.name} launched!`)
         this.titleBarRef.current?.addEventListener('touchstart', (ev) => {this.onTitleBarPress(ev)}, {passive: false});
         this.titleBarRef.current?.addEventListener('touchmove', (ev) => {this.onTitleBarMove(ev)}, {passive: false});
         this.titleBarRef.current?.addEventListener('touchend', (ev) => {this.onTitleBarUnpress(ev)}, {passive: false});
     }
     override componentWillUnmount() {
-        console.log(`[APP] ${this.name} closed!`)
-    }
-
-    public renderIcon() : ReactElement<DesktopIcon> {
-        return <DesktopIcon icon={this.icon} name={this.name}/>
+        console.log(`[APP] ${this.props.name} closed!`)
     }
     
     private renderTitleBar() : JSX.Element {
@@ -83,34 +73,35 @@ export abstract class Application <P={}, S extends ApplicationState=ApplicationS
                 ref={this.titleBarRef}
                 >
                 <div>
-                    <p className="pl-4 pt-2 pb-2">{this.name}</p>
+                    <p className="pl-4 pt-2 pb-2">{this.props.name} (PID: {this.props.pid})</p>
                 </div>
                 <div className="flex justify-center items-center">
-                    <WindowButton color="#fcff4e"/>
-                    <WindowButton color="#ff9b9b"/>
+                    {/* <WindowButton defaultColor="#fcff4e" hoverColor=""/> */}
+                    <WindowButton defaultColor="#ff9b9b" hoverColor="#e04f4f" onPress={() => {this.kill()}}/>
                 </div>
             </div>
         )
     }
-
-    abstract renderApplication() : JSX.Element
+    private kill() {
+        AppManager.killApp(this.props.pid)
+    }
 
     override render() : ReactElement<typeof this> {
         let style : CSSProperties = {
             height: this.initialHeight+"px",
             width: this.initialWidth+"px",
             position: 'absolute',
-            left: this.state.pos.x,
-            top: this.state.pos.y,
+            left: this.state.posX,
+            top: this.state.posY,
             zIndex: this.state.zIndex
         }
         
         return (
-            <div className={this.className} style={style}
+            <div className={this.props.className} style={style}
                 onMouseDown={(e) => this.increaseZIndex()}
                 ref={this.appWindowRef}>
                 {this.renderTitleBar()}
-                {this.renderApplication()}
+                {this.props.children}
             </div>
         )
     }
@@ -146,16 +137,13 @@ export abstract class Application <P={}, S extends ApplicationState=ApplicationS
         const ref : Nullable<HTMLDivElement> = this.appWindowRef.current
         const body = document.body;
         const box = ref?.getBoundingClientRect();
-        if (box == null) throw new Error("No ref found for app window "+this.name)
+        if (box == null) throw new Error("No ref found for app window "+this.props.name)
         this.setState({
-            posRelativeToCursor: {
-                x: pageX - (box.left + body.scrollLeft - body.clientLeft),
-                y: pageY - (box.top + body.scrollTop - body.clientTop)
-            },
+            posRelativeToCursorX: pageX - (box.left + body.scrollLeft - body.clientLeft),
+            posRelativeToCursorY: pageY - (box.top + body.scrollTop - body.clientTop),
             titleBarPressed: true
         });
         if (e instanceof MouseEvent) {
-            e.stopPropagation()
             e.preventDefault()
         }
         
@@ -173,7 +161,6 @@ export abstract class Application <P={}, S extends ApplicationState=ApplicationS
         this.setState({titleBarPressed: false})
 
         if (e instanceof MouseEvent) {
-            e.stopPropagation()
             e.preventDefault()
         }
 
@@ -197,15 +184,11 @@ export abstract class Application <P={}, S extends ApplicationState=ApplicationS
 
 
         this.setState((state) => ({
-            pos: {
-                x: pageX - (state.posRelativeToCursor.x ?? 0),
-                y: pageY - (state.posRelativeToCursor.y ?? 0)
-            }
+            posX: pageX - (state.posRelativeToCursorX ?? 0),
+            posY: pageY - (state.posRelativeToCursorY ?? 0)
         }))
         
-        if (e instanceof MouseEvent) {
-            e.stopPropagation()
-        }
+
         e.preventDefault()
 
     }
@@ -213,35 +196,24 @@ export abstract class Application <P={}, S extends ApplicationState=ApplicationS
 }
 
 type WindowButtonProps = {
-    color: string
+    defaultColor: string,
+    hoverColor: string,
+    onPress?: () => void
 }
 
 export function WindowButton(props: WindowButtonProps) {
+    
+    let [color, setColor] = useState(props.defaultColor)
+
     return (
-        <svg height={18} width={18} viewBox="0 0 18 18" className="mr-3" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="9" cy="9" r="9" fill={props.color}/>
+        <svg height={18} width={18} viewBox="0 0 18 18" className="mr-3" xmlns="http://www.w3.org/2000/svg" 
+            onClick={() => {props.onPress?.()}} 
+            onTouchStart={() => {props.onPress?.()}}
+            onMouseOver={() => {setColor(props.hoverColor)}}
+            onMouseOut={() => {setColor(props.defaultColor)}}>
+            <circle cx="9" cy="9" r="9" fill={color}/>
         </svg>
     )
 }
 
-
-type DesktopIconProps = {
-    icon?: string,
-    name: string
-}
-export class DesktopIcon extends React.Component<DesktopIconProps> {
-    constructor(props: DesktopIconProps) {
-        super(props)
-    }
-
-    public render() : ReactElement<DesktopIcon> {
-        return (
-            <div className="flex w-20 h-20 justify-center items-center">
-                <img src={this.props.icon} height={48} width={48}/>
-                <p>{this.props.name}</p>
-
-            </div>
-        )
-    }
-}
 

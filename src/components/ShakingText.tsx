@@ -13,7 +13,7 @@ export function ShakingText(props: ShakingTextProps) : JSX.Element {
     let style = {
         animationDelay: `${-i*0.3}s`
     }
-    items.push(<span className="shaking" style={style}>{char}</span>)
+    items.push(<span className="shaking" style={style} key={i}>{char}</span>)
   }
   return (
     <span>

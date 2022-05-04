@@ -1,81 +1,75 @@
-import React, { PropsWithChildren, ReactElement, ReactNode } from "react";
-import { Application } from "./Application";
-import { HelloApp } from "./apps/HelloApp";
+import React, { ReactElement, ReactNode, useEffect, useState } from "react"
+import { FunctionComponent } from "react"
+import { AppProps } from "./Application"
 
 
 
-type AppManagerProps = {
-    children?: ReactNode
-}
 
-type AppManagerState = {
-    openApps: Application[]
-}
+namespace AppManager {
 
-export class AppManagerComponent extends React.Component<AppManagerProps, AppManagerState> {
-    static #instance : AppManagerComponent 
-    static get instance() { return AppManagerComponent.#instance }
+    export type AppElement = ReactElement<AppProps>
+    export type AppFunction = (props: AppProps) => AppElement
 
-    private constructor(props: AppManagerProps) {
-        super(props)
-        this.state = {
-            openApps: [new HelloApp()]
-        }
-        if (AppManagerComponent.#instance === undefined) {
-            return AppManagerComponent.#instance
-        }
-        AppManagerComponent.#instance = this
+    let openApps : Array<AppElement> = []
+
+    let globalPid = 0
+
+    export function spawnApp(App: AppFunction) {
+        globalPid++
+        let spawnedApp = <App pid={globalPid}/>
     
+        openApps.push(spawnedApp)
+        console.log(openApps)
+        if (updateState == undefined) {
+            console.log("no update state?")
+        }
+        update()
+    } 
+
+    export function killApp(appPid: number) {
+        openApps = openApps?.filter((it) => { return it?.props?.pid != appPid })
+        if (updateState == undefined) {
+            console.log("no update state?")
+        }
+        update()
     }
 
-    override componentDidMount() {
-        this.spawnApp.bind(this)
-        this.killApp.bind(this)
+    function update() {
+        number++
+        updateState?.(number)
     }
 
+    let updateState : React.Dispatch<React.SetStateAction<number>>
+    let number = 0
 
-    killApp(app: Application) {
-
+    type AppManagerProps = {
+        apps?: Array<AppFunction>
     }
+    export function AppManager(props: AppManagerProps) {
 
-    private globalPID = 0
+        const [isFirst, setFirst] = useState(true)
+        const [_, update] = useState(0)
 
-    spawnApp(app: Application) {
-        this.setState((state) => {
-            let openApps = [...state.openApps]
-            app.setState({
-                pid: this.globalPID+1
-            })
-            this.globalPID++
-            openApps.push(app)
+        useEffect(() => {
+            if (isFirst) {
+                props.apps?.forEach((it) => {
+                    spawnApp(it)
+                })
+                setFirst(false)
+                updateState = update
+            }
+        }, [setFirst, isFirst, props.apps])
 
-            this.setState({
-                openApps: openApps
-            });
-        })
-    }
-
-    get applications() : Application[] {
-        return this.applications
-    }
-
-    override render() : JSX.Element {
-        if (this.state.openApps == undefined) return <div></div>
         return (
-            <div>
-                {this.state.openApps.map((it) => { 
-                    let element = React.createElement(typeof it, it.props)
-
-                    return <ul key={it.state.pid}>{element}</ul>
+            <div id="application-layer">
+                {openApps?.map((it) => {
+                    console.log(it.props.pid)
+                    console.log(`Processing app ${it.props.pid}`)
+                    return <div key={it.props.pid}>{it}</div>
                 })}
             </div>
         )
     }
-
-
-
 }
 
-export function appManager() {
-    return AppManagerComponent.instance
-}
+export default AppManager;
