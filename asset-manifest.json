@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/mastriel-xyz/static/css/main.6fff4d76.css",
-    "main.js": "/mastriel-xyz/static/js/main.76b4c96d.js",
+    "main.js": "/mastriel-xyz/static/js/main.e535a3ce.js",
     "static/js/787.803cc7f8.chunk.js": "/mastriel-xyz/static/js/787.803cc7f8.chunk.js",
     "static/media/Discord-Logo-White.svg": "/mastriel-xyz/static/media/Discord-Logo-White.95ffe85d5859f402d8561cc8ced43dea.svg",
     "index.html": "/mastriel-xyz/index.html",
     "main.6fff4d76.css.map": "/mastriel-xyz/static/css/main.6fff4d76.css.map",
-    "main.76b4c96d.js.map": "/mastriel-xyz/static/js/main.76b4c96d.js.map",
+    "main.e535a3ce.js.map": "/mastriel-xyz/static/js/main.e535a3ce.js.map",
     "787.803cc7f8.chunk.js.map": "/mastriel-xyz/static/js/787.803cc7f8.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.6fff4d76.css",
-    "static/js/main.76b4c96d.js"
+    "static/js/main.e535a3ce.js"
   ]
 }
