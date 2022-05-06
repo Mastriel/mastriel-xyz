@@ -1,4 +1,4 @@
-import React, { CSSProperties, PropsWithChildren, ReactElement, RefObject, useEffect, useState } from "react"
+import React, { CSSProperties, PropsWithChildren, ReactElement, ReactNode, RefObject, useEffect, useState } from "react"
 import { globalZIndex } from "../App"
 import AppManager from "./AppManager"
 
@@ -12,16 +12,17 @@ interface ApplicationState {
     titleBarPressed: boolean,
     zIndex: number
 }
-type ApplicationProps = PropsWithChildren<any> & {
+type ApplicationProps = AppProps & {
     name: string,
     width?: number,
     height?: number,
     className: string,
     icon?: string,
-    pid?: number
+    children?: ReactNode
 }
 export type AppProps = {
-    pid: number
+    pid: number,
+    focused: boolean
 }
 type Nullable<T> = T | undefined | null
 export class Application extends React.Component<ApplicationProps, ApplicationState> {
@@ -31,6 +32,7 @@ export class Application extends React.Component<ApplicationProps, ApplicationSt
 
     constructor(props: ApplicationProps) {
         super(props)
+        
         this.titleBarRef = React.createRef()
         this.appWindowRef = React.createRef()
         this.state = this.defaultApplicationState()
@@ -62,15 +64,24 @@ export class Application extends React.Component<ApplicationProps, ApplicationSt
     }
     
     private renderTitleBar() : JSX.Element {
+        let className = "flex rounded-t-lg -translate-y-10 justify-between border-2 border-slate-900"
+        if (this.props.focused) {
+            className += " bg-slate-800"
+        } else {
+            className += " bg-slate-900"
+        }
+
         return (
-            <div className="bg-gray-800 flex rounded-t-lg -translate-y-10 justify-between"
+            <div className={className}
                 onMouseDown={(e) => this.onTitleBarPress(e.nativeEvent)}
                 onMouseUp={(e) => this.onTitleBarUnpress(e.nativeEvent)}
                 onMouseMove={(e) => this.onTitleBarMove(e.nativeEvent)}
                 ref={this.titleBarRef}
                 >
-                <div>
-                    <p className="pl-4 pt-2 pb-2">{this.props.name} (PID: {this.props.pid})</p>
+                <div className="flex pt-1.5 pb-1.5">
+                    
+                    <img src={this.props.icon} height={36} width={36} alt={`Application ${this.props.name}`} className="self-center pl-2"/>
+                    <p className="pl-2 self-center">{this.props.name} (F: {this.props.focused.toString()}) (P: {this.props.pid})</p>
                 </div>
                 <div className="flex justify-center items-center">
                     {/* <WindowButton defaultColor="#fcff4e" hoverColor=""/> */}
@@ -96,10 +107,13 @@ export class Application extends React.Component<ApplicationProps, ApplicationSt
             top: this.state.posY,
             zIndex: this.state.zIndex
         }
+
+        let className = (this.props.focused ? this.props.className+" app-drop-shadow" : this.props.className) 
+            + " rounded-b-lg app-border"
         
         return (
-            <div className={this.props.className} style={style}
-                onMouseDown={(e) => this.increaseZIndex()}
+            <div className={className} style={style}
+                onMouseDown={(e) => { this.increaseZIndex(); AppManager.focus(this.props.pid) }}
                 ref={this.appWindowRef}>
                 {this.renderTitleBar()}
                 {this.props.children}
@@ -148,6 +162,7 @@ export class Application extends React.Component<ApplicationProps, ApplicationSt
             e.preventDefault()
         }
         
+        AppManager.focus(this.props.pid)
 
         document.addEventListener('mousemove', (ev) => {this.onTitleBarMove(ev)});
         document.addEventListener('mouseup', (ev) => {this.onTitleBarUnpress(ev)});

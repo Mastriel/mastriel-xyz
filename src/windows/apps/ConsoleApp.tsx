@@ -8,7 +8,7 @@ import { DummyApp } from "./DummyApp";
 export function ConsoleApp(props: AppProps) : ReactElement {
 
     return (
-        <Application name="Console" className="bg-black" {...props}>
+        <Application name="Console" className="bg-black" icon="./logo192.png" {...props}>
             <div>
                 <div className="flex items-start justify-evenly">
                     <DesktopIcon name="Console" icon="./logo192.png" app={ConsoleApp}/>
